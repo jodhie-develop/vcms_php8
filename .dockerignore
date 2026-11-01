@@ -1,0 +1,6 @@
+fileSql/
+**/fileSql/
+.git/
+**/logs/
+uploads/
+vendor/

@@ -1,0 +1,39 @@
+services:
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?required}
+      MARIADB_DATABASE: ves_data
+      MARIADB_USER: vcms_app
+      MARIADB_PASSWORD: ${VCMS_DB_PASSWORD:?required}
+    volumes:
+      - vcms_db_data:/var/lib/mysql
+      - ./docker-local/01-local-databases.sql:/docker-entrypoint-initdb.d/01-local-databases.sql:ro
+      - ./fileSql/vcms_db_20261030_141735.sql:/docker-entrypoint-initdb.d/02-vcms-data.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  web:
+    build:
+      context: .
+      dockerfile: docker-local/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8080:80"
+    environment:
+      VCMS_CONFIG: /run/vcms-private/config.php
+    volumes:
+      - .:/var/www/html
+      - vcms_vendor:/var/www/html/vendor
+      - "${VCMS_PRIVATE_PATH:-D:/vcms_private}:/run/vcms-private"
+
+volumes:
+  vcms_db_data:
+  vcms_vendor:

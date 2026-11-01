@@ -1,0 +1,760 @@
+<?php
+require_once __DIR__ . "/_lib/bootstrap.php"; auth_require_login(); 
+include __DIR__ . "/conndb.php";
+include __DIR__ . "/profiledata.php";
+include __DIR__ . "/atas.php";
+include __DIR__ . "/left.php";
+$q = in_val('q', 'get');
+$hari=date("d");
+$bulan=date("m");
+$tahun=date("Y");
+$hari_ini = "$tahun-$bulan-$hari";
+$date_start = in_val('date_start', 'get');
+$date_end = in_val('date_end', 'get');
+if ($date_start ==''){$date_start = "$tahun-$bulan-01";}
+if ($date_end ==''){$date_end = $hari_ini;}
+
+$kd_cbg = in_val('kd_cbg', 'get');
+
+$pilihan_sc = in_val('pilihan_sc', 'get');
+if ($pilihan_sc ==''){$pilihan_sc = 'My Leads';}
+elseif ($kd_cbg == '--ALL--'){$kd_cbg = 0;}
+elseif ($kd_cbg == 'East Sby'){$kd_cbg = 1;}
+elseif ($kd_cbg == 'West Sby'){$kd_cbg = 2;}
+elseif ($kd_cbg == 'Denpasar'){$kd_cbg = 3;}
+elseif ($kd_cbg == 'South Jkt'){$kd_cbg = 4;}
+elseif ($kd_cbg == 'North Jkt'){$kd_cbg = 5;}
+elseif ($kd_cbg == 'West Jkt'){$kd_cbg = 6;}
+elseif ($kd_cbg == 'Bandung'){$kd_cbg = 7;}
+elseif ($kd_cbg == 'Malang TBI'){$kd_cbg = 8;}
+elseif ($kd_cbg == 'Bandung TBI'){$kd_cbg = 9;}
+elseif ($kd_cbg == 'Bali TBI'){$kd_cbg = 10;}
+elseif ($kd_cbg == 'National'){$kd_cbg = 100;}
+elseif ($kd_cbg == 'PIK'){$kd_cbg = 11;}
+elseif ($kd_cbg == 'Serpong'){$kd_cbg = 12;}
+elseif ($kd_cbg == 'CA'){$kd_cbg = 15;}
+elseif ($kd_cbg == 'Medan'){$kd_cbg = 14;}
+elseif ($kd_cbg == 'HO'){$kd_cbg = '00';}
+elseif ($kd_cbg == 'Tangerang'){$kd_cbg = 16;}
+elseif ($kd_cbg == 'FELLOWS ACADEMY'){$kd_cbg = 19;}
+
+
+if ($kd_cbg ==''){$cabang = '--ALL--';}
+elseif (num($kd_cbg) ==1){$cabang = 'East Sby';$db_cabang ='billing.';}
+elseif (num($kd_cbg) ==2){$cabang = 'West Sby';$db_cabang ='billing_west.';}
+elseif (num($kd_cbg) ==3){$cabang = 'Denpasar';$db_cabang ='billing_bali.';}
+elseif (num($kd_cbg) ==4){$cabang = 'South Jkt';$db_cabang ='billing_jkt_02.';}
+elseif (num($kd_cbg) ==5){$cabang = 'North Jkt';$db_cabang ='billing_new_gs.';}
+elseif (num($kd_cbg) ==6){$cabang = 'West Jkt';$db_cabang ='billing_m2.';}
+elseif (num($kd_cbg) ==7){$cabang = 'Bandung';$db_cabang ='billing_new_bdg.';}
+elseif (num($kd_cbg) ==8){$cabang = 'Malang TBI';$db_cabang ='billing_malang.';}
+elseif (num($kd_cbg) ==9){$cabang = 'Bandung TBI';}
+elseif (num($kd_cbg) ==10){$cabang = 'Bali TBI';}
+elseif (num($kd_cbg) ==100){$cabang = 'National';}
+elseif (num($kd_cbg) ==11){$cabang = 'PIK';}
+elseif (num($kd_cbg) ==12){$cabang = 'Serpong';}
+elseif (num($kd_cbg) ==15){$cabang = 'CA';}
+elseif (num($kd_cbg) ==14){$cabang = 'Medan';}
+elseif ($kd_cbg =='00'){$cabang = 'HO';}
+elseif (num($kd_cbg) ==16){$cabang = 'Tangerang';}
+elseif (num($kd_cbg) ==19){$cabang = 'FELLOWS ACADEMY';}
+
+
+$nama_lengkap = $_SESSION['nama_lengkap'];
+$nama_depan = $_SESSION['nama_depan'];
+//$kd_cbg = $_SESSION['kd_branch'];
+$posisi = $_SESSION['posisi']; 
+$kd_staff = $_SESSION['kd_staff'] ;
+
+
+?>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>AdminLTE 2 | Data Tables</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <!-- Bootstrap 3.3.6 -->
+  <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="css/font-awesome.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="css/ionicons.min.css">
+  <!-- DataTables -->
+  <link rel="stylesheet" href="plugins/datatables/dataTables.bootstrap.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="dist/css/AdminLTE.min.css">
+  <!-- AdminLTE Skins. Choose a skin from the css/skins
+       folder instead of downloading all of them to reduce the load. -->
+  <link rel="stylesheet" href="dist/css/skins/_all-skins.min.css">
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+  <!-- Content Wrapper. Contains page content -->
+ <form method=get action=#> 
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+   <section class="content-header">
+     <h1>FA Income Summary<br>
+     </h1>
+     <?php 
+ if ($cabang =='National')
+	{
+	$query = q_set($__p_query, "SELECT date_format(min(a.dt_payment),'%b %d, %Y'), date_format(min(a.dt_cetak),'%b %d, %Y'), a.id_receipt, a.kd_biodata, b.kd_program,a.kd_branch,amount, jns_Payment,a.pay_mtd,a.kd_billing,a.no, b.sc,c.hp   FROM vip_billing_payment a \r
+\tleft join vip_billing b on a.kd_biodata = b.kd_biodata and a.kd_billing = b.kd_billing\r
+\tleft join ves_inc.tb_biodata c on c.kd_biodata = a.kd_biodata where a.id_receipt <> '' \r
+\tand dt_payment between ? and ? and b.kd_program like 'FA-%' group by id_receipt order by id_receipt desc", [(string) ($date_start), (string) ($date_end)]);		
+	}
+   
+ elseif ($cabang =='HO')
+	{
+
+	$query = q_set($__p_query, "SELECT date_format(min(a.dt_payment),'%b %d, %Y'), date_format(min(a.dt_cetak),'%b %d, %Y'), a.id_receipt, a.kd_biodata, b.kd_program,a.kd_branch,amount, jns_Payment,a.pay_mtd,a.kd_billing,a.no, b.sc,c.hp   FROM vip_billing_payment a left join vip_billing b on a.kd_biodata = b.kd_biodata and a.kd_billing = b.kd_billing \tleft join ves_inc.tb_biodata c on c.kd_biodata = a.kd_biodata  where a.id_receipt <> '' \r
+\tand dt_payment between ? and ? and (a.kd_branch = '0' or a.kd_branch = '00') and b.kd_program like 'FA-%' group by id_receipt order by id_receipt desc", [(string) ($date_start), (string) ($date_end)]);		
+	}	   
+else
+	{
+	$query = q_set($__p_query, "SELECT date_format(min(a.dt_payment),'%b %d, %Y'), date_format(min(a.dt_cetak),'%b %d, %Y'), a.id_receipt, a.kd_biodata, b.kd_program,a.kd_branch,amount, jns_Payment,a.pay_mtd,a.kd_billing,a.no, b.sc,c.hp   FROM vip_billing_payment a left join vip_billing b on a.kd_biodata = b.kd_biodata and a.kd_billing = b.kd_billing \tleft join ves_inc.tb_biodata c on c.kd_biodata = a.kd_biodata  where a.id_receipt <> '' and a.kd_branch = ?\r
+\tand dt_payment between ? and ? and b.kd_program like 'FA-%' group by id_receipt order by id_receipt desc", [(string) ($kd_cbg), (string) ($date_start), (string) ($date_end)]);			
+	}
+	   
+$total_rp = 0;
+$no_urut = 1;
+$result=db_query_or_die("Wah error nih11", $query, $__p_query ?? []);
+$num_rows = db_num_rows($result);?>
+     <table width="40%"  class="table table-bordered table-striped" id="example222">
+       <tbody>
+         <tr>
+           <th width="11%" scope="row">Center</th>
+           <td width="89%"><select name="kd_cbg"  onChange="this.form.submit()"   class="style33" id="select">
+<?php if ($nama_lengkap == 'Stevanus Yustiawan') { ?>}			   
+             <option value="0">--CHOOSE--</option>
+             <option value="4">South Jkt</option>
+             <option value="5">North Jkt</option>
+             <option value="11">PIK</option>	
+             <option value="12">Serpong</option>				   
+             <option value="6">West Jkt</option>
+
+             <option value="15">CA</option>
+<?php } else { ?>
+             <option value="0">--CHOOSE--</option>
+             <option value="1">East Sby</option>
+             <option value="2">West Sby</option>
+             <option value="3">Denpasar</option>
+             <option value="8">Malang</option>
+             <option value="14">Medan</option>
+			   
+             <option value="101">East Area</option>
+             <option value="4">South Jkt</option>
+             <option value="5">North Jkt</option>
+             <option value="11">PIK</option>	
+             <option value="12">Serpong</option>				   
+             <option value="6">West Jkt</option>
+             <option value="7">Bandung</option>
+             <option value="102">West Area</option>
+             <option value="100">National</option>
+             <option value="15">CA</option>
+             <option value="00">HO</option>
+             <option value="16">Tangerang</option>
+             <option value="19">FELLOWS ACADEMY</option>
+			   
+
+			   
+			   
+			   
+<?php } ?>			   
+             <option selected="selected"><?php echo e($cabang) ?></option>
+           </select></td>
+         </tr>
+         <tr>
+           <th scope="row">Period Date</th>
+           <td><small>
+             <input type="date" format="dd/MM/yyyy" name="date_start" id="date2" value="<?php echo e($date_start) ; ?>" onChange="this.form.submit()">
+           </small> To <small>
+           <input type="date" format="dd/MM/yyyy" name="date_end" id="date" value="<?php echo e($date_end) ; ?>" onChange="this.form.submit()">
+           </small></td>
+         </tr>
+       </tbody>
+     </table>
+   
+
+   </section>
+<?php
+$query_reg = q_set($__p_query_reg, "SELECT b.kd_branch, sum(amount) FROM vip_billing_payment a left join vip_billing b on a.kd_billing = b.kd_billing where   dt_payment between ? and ? and status = 'PAID' and jns_payment = 'Registration' and b.kd_program like 'FA-%' group by b.kd_branch", [(string) ($date_start), (string) ($date_end)]);
+
+$result_reg=db_query_or_die("Wah error nih122", $query_reg, $__p_query_reg ?? []);
+
+while ($r_total_reg = db_fetch($result_reg))
+	{ 
+	$nomor_cbg = $r_total_reg[0];
+	$ttl_amount_reg = $r_total_reg[1];
+
+	if (num($nomor_cbg) == 1){$ttl_1_reg = $ttl_amount_reg;}	if (num($nomor_cbg) == 2){$ttl_2_reg = $ttl_amount_reg;}
+	if (num($nomor_cbg) == 3){$ttl_3_reg = $ttl_amount_reg;}	if (num($nomor_cbg) == 4){$ttl_4_reg = $ttl_amount_reg;}
+	if (num($nomor_cbg) == 5){$ttl_5_reg = $ttl_amount_reg;}	if (num($nomor_cbg) == 6){$ttl_6_reg = $ttl_amount_reg;}
+	if (num($nomor_cbg) == 7){$ttl_7_reg = $ttl_amount_reg;}	if (num($nomor_cbg) == 8){$ttl_8_reg = $ttl_amount_reg;}if (num($nomor_cbg) == 11){$ttl_11_reg = $ttl_amount_reg;}
+	
+	}	
+$query_material = q_set($__p_query_material, "SELECT kd_branch, sum(amount) FROM vip_billing_payment a where  dt_payment between ? and ? and status = 'PAID' and jns_payment = 'Material' group by kd_branch", [(string) ($date_start), (string) ($date_end)]);
+
+$result_material=db_query_or_die("Wah error nih133", $query_material, $__p_query_material ?? []);
+
+while ($r_total_material = db_fetch($result_material))
+	{ 
+	$nomor_cbg = $r_total_material[0];
+	$ttl_amount_material = $r_total_material[1];
+
+	if (num($nomor_cbg) == 1){$ttl_1_material = $ttl_amount_material;}	if (num($nomor_cbg) == 2){$ttl_2_material = $ttl_amount_material;}
+	if (num($nomor_cbg) == 3){$ttl_3_material = $ttl_amount_material;}	if (num($nomor_cbg) == 4){$ttl_4_material = $ttl_amount_material;}
+	if (num($nomor_cbg) == 5){$ttl_5_material = $ttl_amount_material;}	if (num($nomor_cbg) == 6){$ttl_6_material = $ttl_amount_material;}
+	if (num($nomor_cbg) == 7){$ttl_7_material = $ttl_amount_material;}	if (num($nomor_cbg) == 8){$ttl_8_material = $ttl_amount_material;}if (num($nomor_cbg) == 11){$ttl_11_material = $ttl_amount_material;}
+	
+	}
+$query_dp = q_set($__p_query_dp, "SELECT b.kd_branch, sum(amount) FROM vip_billing_payment a left join vip_billing b on a.kd_billing = b.kd_billing where   dt_payment between ? and ? and status = 'PAID' and jns_payment = 'Down Payment' and b.kd_program like 'FA-%' group by b.kd_branch", [(string) ($date_start), (string) ($date_end)]);
+
+$result_dp=db_query_or_die("Wah error nih144", $query_dp, $__p_query_dp ?? []);
+
+while ($r_total_dp = db_fetch($result_dp))
+	{ 
+	$nomor_cbg = $r_total_dp[0];
+	$ttl_amount_dp = $r_total_dp[1];
+
+	if (num($nomor_cbg) == 1){$ttl_1_dp = $ttl_amount_dp;}	if (num($nomor_cbg) == 2){$ttl_2_dp = $ttl_amount_dp;}
+	if (num($nomor_cbg) == 3){$ttl_3_dp = $ttl_amount_dp;}	if (num($nomor_cbg) == 4){$ttl_4_dp = $ttl_amount_dp;}
+	if (num($nomor_cbg) == 5){$ttl_5_dp = $ttl_amount_dp;}	if (num($nomor_cbg) == 6){$ttl_6_dp = $ttl_amount_dp;}
+	if (num($nomor_cbg) == 7){$ttl_7_dp = $ttl_amount_dp;}	if (num($nomor_cbg) == 8){$ttl_8_dp = $ttl_amount_dp;}if (num($nomor_cbg) == 11){$ttl_11_dp = $ttl_amount_dp;}
+	
+	}
+$query_inst = q_set($__p_query_inst, "SELECT b.kd_branch, sum(amount) FROM vip_billing_payment a left join vip_billing b on a.kd_billing = b.kd_billing where   dt_payment between ? and ? and status = 'PAID'  and b.kd_program like 'FA-%' and (jns_payment = 'Installment 1' or jns_payment = 'Installment 2'  or jns_payment = 'Installment 3' ) group by b.kd_branch", [(string) ($date_start), (string) ($date_end)]);
+
+$result_inst=db_query_or_die("Wah error nih155", $query_inst, $__p_query_inst ?? []);
+
+while ($r_total_inst = db_fetch($result_inst))
+	{ 
+	$nomor_cbg = $r_total_inst[0];
+	$ttl_amount_inst = $r_total_inst[1];
+
+	if (num($nomor_cbg) == 1){$ttl_1_inst = $ttl_amount_inst;}	if (num($nomor_cbg) == 2){$ttl_2_inst = $ttl_amount_inst;}
+	if (num($nomor_cbg) == 3){$ttl_3_inst = $ttl_amount_inst;}	if (num($nomor_cbg) == 4){$ttl_4_inst = $ttl_amount_inst;}
+	if (num($nomor_cbg) == 5){$ttl_5_inst = $ttl_amount_inst;}	if (num($nomor_cbg) == 6){$ttl_6_inst = $ttl_amount_inst;}
+	if (num($nomor_cbg) == 7){$ttl_7_inst = $ttl_amount_inst;}	if (num($nomor_cbg) == 8){$ttl_8_inst = $ttl_amount_inst;}if (num($nomor_cbg) == 11){$ttl_11_inst = $ttl_amount_inst;}
+	
+	}
+
+$query_full = q_set($__p_query_full, "SELECT b.kd_branch, sum(amount) FROM vip_billing_payment a left join vip_billing b on a.kd_billing = b.kd_billing where   dt_payment between ? and ? and status = 'PAID' and jns_payment = 'Full Payment' and b.kd_program like 'FA-%' group by b.kd_branch", [(string) ($date_start), (string) ($date_end)]);
+
+$result_full=db_query_or_die("Wah error nih15555", $query_full, $__p_query_full ?? []);
+
+while ($r_total_full = db_fetch($result_full))
+	{ 
+	$nomor_cbg = $r_total_full[0];
+	$ttl_amount_full = $r_total_full[1];
+
+	if (num($nomor_cbg) == 1){$ttl_1_full = $ttl_amount_full;}	elseif (num($nomor_cbg) == 2){$ttl_2_full = $ttl_amount_full;}
+	elseif(num($nomor_cbg) == 3){$ttl_3_full = $ttl_amount_full;}	elseif (num($nomor_cbg) == 4){$ttl_4_full = $ttl_amount_full;}
+	elseif(num($nomor_cbg) == 5){$ttl_5_full = $ttl_amount_full;}	elseif (num($nomor_cbg) == 6){$ttl_6_full = $ttl_amount_full;}
+	elseif(num($nomor_cbg) == 7){$ttl_7_full = $ttl_amount_full;}	elseif (num($nomor_cbg) == 8){$ttl_8_full = $ttl_amount_full;}
+	elseif (num($nomor_cbg) == 11){$ttl_11_full = $ttl_amount_full;}
+	elseif(num($nomor_cbg) == 14){$ttl_14_full = $ttl_amount_full;}	elseif (num($nomor_cbg) == 16){$ttl_16_full = $ttl_amount_full;}
+	
+	$ttl_amount_dp ='';
+	}	
+	
+
+	$ttl_1 = num($ttl_1_reg)+ num($ttl_1_dp) + num($ttl_1_inst) + num($ttl_1_material) + num($ttl_1_full);
+	$ttl_2 = num($ttl_2_reg)+ num($ttl_2_dp) + num($ttl_2_inst) + num($ttl_2_material) + num($ttl_2_full);
+	$ttl_3 = num($ttl_3_reg)+ num($ttl_3_dp) + num($ttl_3_inst) + num($ttl_3_material) + num($ttl_3_full);
+	$ttl_4 = num($ttl_4_reg)+ num($ttl_4_dp) + num($ttl_4_inst) + num($ttl_4_material) + num($ttl_4_full);
+	$ttl_5 = num($ttl_5_reg)+ num($ttl_5_dp) + num($ttl_5_inst) + num($ttl_5_material) + num($ttl_5_full);
+	$ttl_6 = num($ttl_6_reg)+ num($ttl_6_dp) + num($ttl_6_inst) + num($ttl_6_material) + num($ttl_6_full);
+	$ttl_7 = num($ttl_7_reg)+ num($ttl_7_dp) + num($ttl_7_inst) + num($ttl_7_material) + num($ttl_7_full);
+		$ttl_8 = num($ttl_8_reg)+ num($ttl_8_dp) + num($ttl_8_inst) + num($ttl_8_material) + num($ttl_8_full);
+	$ttl_11 = num($ttl_11_reg)+ num($ttl_11_dp) + num($ttl_11_inst) + num($ttl_11_material) + num($ttl_11_full);
+	$ttl_14 = num($ttl_14_reg)+ num($ttl_14_dp) + num($ttl_14_inst) + num($ttl_14_material) + num($ttl_14_full);	  
+	$ttl_16 = num($ttl_16_reg)+ num($ttl_16_dp) + num($ttl_16_inst) + num($ttl_16_material) + num($ttl_16_full);
+
+?>
+  <?php if ($nama_lengkap != 'Stevanus Yustiawan'){?>
+  <section class="content">
+          <div class="box">
+            <!-- /.box-header -->
+            <div class="box-body">
+          <table width="40%"  class="table table-bordered table-striped" id="example1">
+       <tbody>
+         <tr>
+           <th scope="row"><strong>FA ALL Center </strong>Summary Income</th>
+           <th scope="row">&nbsp;</th>
+           <th scope="row">&nbsp;</th>
+           <th scope="row">&nbsp;</th>
+           <th scope="row">&nbsp;</th>
+           <th scope="row">&nbsp;</th>
+           <th scope="row">&nbsp;</th>
+           <th scope="row">&nbsp;</th>
+           <th scope="row">&nbsp;</th>
+           <th scope="row">&nbsp;</th>
+           <th scope="row">&nbsp;</th>
+           <th scope="row">&nbsp;</th>
+           <th scope="row">&nbsp;</th>
+           <th scope="row">&nbsp;</th>
+           <th scope="row">&nbsp;</th>
+         </tr>
+         <tr>
+           <th width="6%" scope="row">Center</th>
+           <td width="11%">East Sby</td>
+           <td width="9%">West Sby</td>
+           <td width="8%">Denpasar</td>
+           <td width="8%">Malang</td>
+           <td width="10%">&nbsp;</td>
+           <td width="6%">South  Jkt</td>
+           <td width="9%">North Jkt</td>
+           <td width="11%">West Jkt</td>
+           <td width="7%">Bandung</td>
+           <td width="6%">&nbsp;</td>
+           <td width="9%">PIK</td>
+           <td width="9%">Medan</td>
+           <td width="9%">Tangerang</td>
+           <td width="9%">Grand Total</td>
+         </tr>
+         <tr>
+           <th scope="row">Registration</th>
+           <td><?php echo number_format(num($ttl_1_reg),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_2_reg),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_3_reg),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_8_reg),0,".",".") ?></td>
+           <td>&nbsp;</td>
+           <td><?php echo number_format(num($ttl_4_reg),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_5_reg),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_6_reg),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_7_reg),0,".",".") ?></td>
+           <td>&nbsp;</td>
+           <td><?php echo number_format(num($ttl_11_reg),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_14_reg),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_16_reg),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_1_reg) + num($ttl_2_reg) + num($ttl_3_reg) + num($ttl_4_reg) + num($ttl_5_reg) + num($ttl_6_reg) + num($ttl_7_reg) + num($ttl_8_reg) + num($ttl_11_reg)  + num($ttl_14_reg)  + num($ttl_16_reg),0,".",".") ?></td>
+           </tr>
+         <tr>
+           <th scope="row">Material Cost</th>
+           <td><?php echo number_format(num($ttl_1_material),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_2_material),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_3_material),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_8_material),0,".",".") ?></td>
+           <td>&nbsp;</td>
+           <td><?php echo number_format(num($ttl_4_material),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_5_material),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_6_material),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_7_material),0,".",".") ?></td>
+           <td>&nbsp;</td>
+           <td><?php echo number_format(num($ttl_11_material),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_14_material),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_16_material),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_1_material) + num($ttl_2_material) + num($ttl_3_material) + num($ttl_4_material) + num($ttl_5_material) + num($ttl_6_material) + num($ttl_7_material) + num($ttl_8_material) + num($ttl_11_material)  + num($ttl_14_material)  + num($ttl_16_material),0,".",".") ?></td>
+           </tr>
+         <tr>
+           <th scope="row"> DP</th>
+           <td><?php echo number_format(num($ttl_1_dp),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_2_dp),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_3_dp),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_8_dp),0,".",".") ?></td>
+           <td>&nbsp;</td>
+           <td><?php echo number_format(num($ttl_4_dp),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_5_dp),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_6_dp),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_7_dp),0,".",".") ?></td>
+           <td>&nbsp;</td>
+           <td><?php echo number_format(num($ttl_11_dp),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_14_dp),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_16_dp),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_1_dp) + num($ttl_2_dp) + num($ttl_3_dp) + num($ttl_4_dp) + num($ttl_5_dp) + num($ttl_6_dp) + num($ttl_7_dp) + num($ttl_8_dp) + num($ttl_11_dp) + num($ttl_14_dp) + num($ttl_16_dp),0,".",".") ?></td>
+           </tr>
+         <tr>
+           <th scope="row">Installment</th>
+           <td><?php echo number_format(num($ttl_1_inst),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_2_inst),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_3_inst),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_8_inst),0,".",".") ?></td>
+           <td>&nbsp;</td>
+           <td><?php echo number_format(num($ttl_4_inst),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_5_inst),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_6_inst),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_7_inst),0,".",".") ?></td>
+           <td>&nbsp;</td>
+           <td><?php echo number_format(num($ttl_11_inst),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_14_inst),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_16_inst),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_1_inst) + num($ttl_2_inst) + num($ttl_3_inst) + num($ttl_4_inst) + num($ttl_5_inst) + num($ttl_6_inst) + num($ttl_7_inst) + num($ttl_8_inst) + num($ttl_11_inst) + num($ttl_14_inst) + num($ttl_16_inst),0,".",".") ?></td>
+           </tr>
+         <tr>
+           <th scope="row">Full Payment</th>
+           <td><?php echo number_format(num($ttl_1_full),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_2_full),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_3_full),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_8_full),0,".",".") ?></td>
+           <td>&nbsp;</td>
+           <td><?php echo number_format(num($ttl_4_full),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_5_full),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_6_full),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_7_full),0,".",".") ?></td>
+           <td>&nbsp;</td>
+           <td><?php echo number_format(num($ttl_11_full),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_14_full),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_16_full),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_1_full) + num($ttl_2_full) + num($ttl_3_full) + num($ttl_4_full) + num($ttl_5_full) + num($ttl_6_full) + num($ttl_7_full) + num($ttl_8_full) + num($ttl_11_full) + num($ttl_14_full) + num($ttl_16_full),0,".",".") ?></td>
+           </tr>
+         <tr>
+           <th scope="row">Total Payment</th>
+           <td><?php echo number_format(num($ttl_1),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_2),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_3),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_8),0,".",".") ?></td>
+           <td>&nbsp;</td>
+           <td><?php echo number_format(num($ttl_4),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_5),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_6),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_7),0,".",".") ?></td>
+           <td>&nbsp;</td>
+           <td><?php echo number_format(num($ttl_11),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_14),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_16),0,".",".") ?></td>
+           <td><?php echo number_format(num($ttl_1) + num($ttl_2) + num($ttl_3) + num($ttl_4) + num($ttl_5) + num($ttl_6) + num($ttl_7) + num($ttl_8)+num($ttl_11) + num($ttl_14) +num($ttl_16),0,".",".") ?></td>
+         </tr>
+       </tbody>
+     </table>          	
+            </div>
+	  </div>       
+
+	   </section>      
+<?php } ?>    
+   <!-- Main content -->
+    <section class="content">
+      <div class="row">
+        <div class="col-xs-12">
+          <!-- /.box -->
+		
+          <div class="box">
+            <!-- /.box-header -->
+            <div class="box-body">
+              <table width="97%" class="table table-bordered table-striped" id="example1">
+                <thead>
+                <tr>
+                  <th width="2%">No</th>
+                  <th width="7%">Effective Date</th>
+                  <th width="7%"> Receipt Date</th>
+                  <th width="27%">Student Name</th>
+                  <th width="12%">Receipt Number</th>
+                  <th width="14%">Discount</th>
+                  <th width="14%">Voucher</th>
+                  <th width="14%">Program</th>
+                  <th width="10%">Detail</th>
+                  <th width="10%">Amount</th>
+                  <th width="11%">Payment Metodh</th>
+                  <th width="11%">Consultant</th>
+                  </tr>
+                </thead>
+                <tbody>
+
+				  <?php 
+					if ($result) 
+						{ 
+						while ($r = db_fetch($result))
+							{
+//							$query_nama = "SELECT concat_ws(' ',nama, middle_name) from ves_inc.tb_biodata where kd_biodata = '$r[3]' and kd_branch = '$r[5]'";
+							$query_discount = q_set($__p_query_discount, "SELECT discount,tf,net_tf,voucher,level_program from ves_data.vip_billing where kd_billing = ? ", [(string) ($r[9])]);
+
+							$result_discount=db_query_or_die("Wah error nih1", $query_discount, $__p_query_discount ?? []);	
+							while ($r_discount = db_fetch($result_discount))
+							{ $nm_discount = $r_discount[0];
+							 $tf_asli = $r_discount[1];
+							 $tf_nett = $r_discount[2];
+							  $nm_voucher = $r_discount[3];
+							 $tf_selisih = num($tf_asli) - num($tf_nett);
+							// $bsr_discount = ($tf_selisih/$tf_asli)*100;
+							 $jenis_program = $r_discount[4];
+							}
+							
+							$query_nama = q_set($__p_query_nama, "SELECT nama_lengkap from ves_data.vip_student_data where kd_biodata = ? and kd_branch = ? ", [(string) ($r[3]), (string) ($r[5])]);
+								
+							$result_nama=db_query_or_die("Wah error nih1", $query_nama, $__p_query_nama ?? []);	
+							while ($r_nama = db_fetch($result_nama))
+								{ $nama_student = $r_nama[0];}
+							$query_program = q_set($__p_query_program, "SELECT concat_ws(' ', type_program, nm_program), level_program, buku FROM ves_data.vip_mst_code_prg  where kd_program =  ? group by kd_program", [(string) ($r[4])]);
+
+							$result_program=db_query_or_die("Wah error nih1", $query_program, $__p_query_program ?? []);	
+							while ($r_program = db_fetch($result_program))
+								{ $nama_program = $r_program[0];//$jenis_program = $r_program[1];
+								}		
+				?>                
+                <tr>
+                  <td><?php echo e($no_urut) ; ?></td>
+                  <td><?php echo e($r[0]) ; ?></td>
+                  <td><?php echo e($r[1]) ; ?></td>
+                  <td><?php echo e($nama_student) ; ?><br>
+                  <?php echo e($r[12]) ; ?></td>
+                  <td><a href="vipbookreceiptprint.php" 
+target="popup" 
+onclick="window.open('printable/vipreceiptprint.php?no=<?php echo e(u($r[10])); ?>','popup','width=1000,height=800'); return false;"><?php echo e($r[2]) ; ?></a></td>
+                  <td><?php echo e($nm_discount) ; ?></td>
+                  <td><?php echo e($nm_voucher) ; ?></td>
+                  <td><?php echo e($nama_program) ; ?> - <?php echo e($jenis_program) ; ?></td>
+                  <td><?php echo e($r[7]) ; ?></td>
+                  <td><?php echo number_format(num($r[6]),0,".",".") ; ?></td>
+                  <td><?php echo e($r[8]) ; ?></td>
+                  <td><?php echo e($r[11]) ; ?></td>
+                  </tr>
+                <?php $total_rp = num($total_rp) + num($r[6]); $no_urut = num($no_urut) + 1; $r[6] =''; } } ?>
+            
+                </tbody>
+                <tfoot>
+                </tfoot>
+              </table>
+            </div>
+            <div class="box">
+         	<div class="box-body">
+         		<label>TOTAL INCOME : Rp. <?php echo number_format(num($total_rp),0,".",".")  ; ?></label>
+         	</div>
+         </div>
+            <!-- /.box-body -->
+          </div><a href="rpt_vip_inc.php?kd_cbg=<?php echo e(u($kd_cbg))?>&date_start=<?php echo e(u($date_start)) ?>&date_end=<?php echo e(u($date_end))?>" target="_blank" class="btn btn-default"><i class="fa fa-print"></i> Print</a><a href="fa_receiptxl.php?kd_cbg=<?php echo e(u($kd_cbg))?>&date_start=<?php echo e(u($date_start)) ?>&date_end=<?php echo e(u($date_end))?>" target="_blank" class="btn btn-default"><i class="fa fa-print"></i>Excel</a>
+          <!-- /.box -->
+        </div>
+        <!-- /.col -->
+      </div>
+      <!-- /.row -->
+   </section>
+    <!-- /.content -->
+  </form> 
+<!-- /.content-wrapper --><!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Create the tabs -->
+    <ul class="nav nav-tabs nav-justified control-sidebar-tabs">
+      <li><a href="#control-sidebar-home-tab" data-toggle="tab"><i class="fa fa-home"></i></a></li>
+      <li><a href="#control-sidebar-settings-tab" data-toggle="tab"><i class="fa fa-gears"></i></a></li>
+    </ul>
+    <!-- Tab panes -->
+    <div class="tab-content">
+      <!-- Home tab content -->
+      <div class="tab-pane" id="control-sidebar-home-tab">
+        <h3 class="control-sidebar-heading">Recent Activity</h3>
+        <ul class="control-sidebar-menu">
+          <li>
+            <a href="javascript:void(0)">
+              <i class="menu-icon fa fa-birthday-cake bg-red"></i>
+
+              <div class="menu-info">
+                <h4 class="control-sidebar-subheading">Langdon's Birthday</h4>
+
+                <p>Will be 23 on April 24th</p>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a href="javascript:void(0)">
+              <i class="menu-icon fa fa-user bg-yellow"></i>
+
+              <div class="menu-info">
+                <h4 class="control-sidebar-subheading">Frodo Updated His Profile</h4>
+
+                <p>New phone +1(800)555-1234</p>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a href="javascript:void(0)">
+              <i class="menu-icon fa fa-envelope-o bg-light-blue"></i>
+
+              <div class="menu-info">
+                <h4 class="control-sidebar-subheading">Nora Joined Mailing List</h4>
+
+                <p>nora@example.com</p>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a href="javascript:void(0)">
+              <i class="menu-icon fa fa-file-code-o bg-green"></i>
+
+              <div class="menu-info">
+                <h4 class="control-sidebar-subheading">Cron Job 254 Executed</h4>
+
+                <p>Execution time 5 seconds</p>
+              </div>
+            </a>
+          </li>
+        </ul>
+        <!-- /.control-sidebar-menu -->
+
+        <h3 class="control-sidebar-heading">Tasks Progress</h3>
+        <ul class="control-sidebar-menu">
+          <li>
+            <a href="javascript:void(0)">
+
+              <h4 class="control-sidebar-subheading">
+                Custom Template Design
+                <span class="label label-danger pull-right">70%</span>
+              </h4>
+
+              <div class="progress progress-xxs">
+                <div class="progress-bar progress-bar-danger" style="width: 70%"></div>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a href="javascript:void(0)">
+              <h4 class="control-sidebar-subheading">
+                Update Resume
+                <span class="label label-success pull-right">95%</span>
+              </h4>
+
+              <div class="progress progress-xxs">
+                <div class="progress-bar progress-bar-success" style="width: 95%"></div>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a href="javascript:void(0)">
+              <h4 class="control-sidebar-subheading">
+                Laravel Integration
+                <span class="label label-warning pull-right">50%</span>
+              </h4>
+
+              <div class="progress progress-xxs">
+                <div class="progress-bar progress-bar-warning" style="width: 50%"></div>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a href="javascript:void(0)">
+              <h4 class="control-sidebar-subheading">
+                Back End Framework
+                <span class="label label-primary pull-right">68%</span>
+              </h4>
+
+              <div class="progress progress-xxs">
+                <div class="progress-bar progress-bar-primary" style="width: 68%"></div>
+              </div>
+            </a>
+          </li>
+        </ul>
+        <!-- /.control-sidebar-menu -->
+
+      </div>
+      <!-- /.tab-pane -->
+      <!-- Stats tab content -->
+      <div class="tab-pane" id="control-sidebar-stats-tab">Stats Tab Content</div>
+      <!-- /.tab-pane -->
+      <!-- Settings tab content -->
+      <div class="tab-pane" id="control-sidebar-settings-tab">
+        <form method="post"><?php echo csrf_field(); ?>
+
+          <h3 class="control-sidebar-heading">General Settings</h3>
+
+          <div class="form-group">
+            <label class="control-sidebar-subheading">
+              Report panel usage
+              <input type="checkbox" class="pull-right" checked>
+            </label>
+
+            <p>
+              Some information about this general settings option
+            </p>
+          </div>
+          <!-- /.form-group -->
+
+          <div class="form-group">
+            <label class="control-sidebar-subheading">
+              Allow mail redirect
+              <input type="checkbox" class="pull-right" checked>
+            </label>
+
+            <p>
+              Other sets of options are available
+            </p>
+          </div>
+          <!-- /.form-group -->
+
+          <div class="form-group">
+            <label class="control-sidebar-subheading">
+              Expose author name in posts
+              <input type="checkbox" class="pull-right" checked>
+            </label>
+
+            <p>
+              Allow the user to show his name in blog posts
+            </p>
+          </div>
+          <!-- /.form-group -->
+
+          <h3 class="control-sidebar-heading">Chat Settings</h3>
+
+          <div class="form-group">
+            <label class="control-sidebar-subheading">
+              Show me as online
+              <input type="checkbox" class="pull-right" checked>
+            </label>
+          </div>
+          <!-- /.form-group -->
+
+          <div class="form-group">
+            <label class="control-sidebar-subheading">
+              Turn off notifications
+              <input type="checkbox" class="pull-right">
+            </label>
+          </div>
+          <!-- /.form-group -->
+
+          <div class="form-group">
+            <label class="control-sidebar-subheading">
+              Delete chat history
+              <a href="javascript:void(0)" class="text-red pull-right"><i class="fa fa-trash-o"></i></a>
+            </label>
+          </div>
+          <!-- /.form-group -->
+        </form>
+      </div>
+      <!-- /.tab-pane -->
+    </div>
+  </aside>
+  <!-- /.control-sidebar -->
+  <!-- Add the sidebar's background. This div must be placed
+       immediately after the control sidebar -->
+  <div class="control-sidebar-bg"></div>
+</div>
+<!-- ./wrapper -->
+<!-- jQuery 2.2.3 -->
+<script src="plugins/jQuery/jquery-2.2.3.min.js"></script>
+<!-- Bootstrap 3.3.6 -->
+<script src="bootstrap/js/bootstrap.min.js"></script>
+<!-- DataTables -->
+<script src="plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="plugins/datatables/dataTables.bootstrap.min.js"></script>
+<!-- SlimScroll -->
+<script src="plugins/slimScroll/jquery.slimscroll.min.js"></script>
+<!-- FastClick -->
+<script src="plugins/fastclick/fastclick.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/app.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="dist/js/demo.js"></script>
+<!-- page script -->
+<script>
+  $(function () {
+    $("#example1").DataTable();
+    $('#example2').DataTable({
+      "paging": true,
+      "lengthChange": false,
+      "searching": false,
+      "ordering": true,
+      "info": true,
+      "autoWidth": false
+    });
+  });
+</script>
+</body>
+</html>

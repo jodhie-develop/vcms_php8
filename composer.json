@@ -1,0 +1,20 @@
+{
+    "name": "vista/vcms",
+    "description": "V-CMS (PHP 8.4) — pustaka pihak ketiga. Jalankan: composer install --no-dev --optimize-autoloader",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.4",
+        "dompdf/dompdf": "^3.1",
+        "phpoffice/phpspreadsheet": "^4.0 || ^5.0",
+        "spipu/html2pdf": "^5.2"
+    },
+    "config": {
+        "vendor-dir": "vendor",
+        "optimize-autoloader": true,
+        "sort-packages": true,
+        "platform": {
+            "php": "8.4.0"
+        }
+    }
+}

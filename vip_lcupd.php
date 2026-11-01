@@ -1,0 +1,389 @@
+<?php
+require_once __DIR__ . "/_lib/bootstrap.php"; csrf_guard_get(); auth_require_login(); 
+include __DIR__ . "/conndb.php";
+include __DIR__ . "/profiledata.php";
+$no = in_val('no', 'any');
+$stlc = in_val('stlc', 'any');
+
+$query_kelas = q_set($__p_query_kelas, "SELECT kelas, v.kd_branch, mulai_tm, nm_teacher,date_format(selesai_tm,'%k:%i'),room,date_format(mulai_tm,'%Y-%m-%d'),urutan,date_format(mulai_tm,'%k:%i'),v.kd_biodata,c.nama_lengkap FROM ves_data.vip_teacher_schedule v left join vip_student_data c on v.kd_biodata = c.kd_biodata where v.id = ? ", [(string) ($no)]);
+$resource_kelas= db_query_or_die('errro_visitor1', $query_kelas, $__p_query_kelas ?? []);
+$keluar_kelas= db_num_rows($resource_kelas);
+	if(num(db_num_rows($resource_kelas)) > 0)
+		{
+		while ($row_kelas =   db_fetch($resource_kelas, PDO::FETCH_NUM))
+			{
+			$kdcl = $row_kelas[0];
+			$kdcbg = $row_kelas[1];	
+			$tgl_meeting_lama = $row_kelas[6];
+			$teacher_lama = $row_kelas[3];	
+			$end_schedule_lama = $row_kelas[4];
+			$room_lama = $row_kelas[5];	
+			$tgl_lama = $row_kelas[6];
+			$urutan_lama = $row_kelas[7];
+			$start_schedule_lama = $row_kelas[8];	
+			$tgl_lengkap_lama = $row_kelas[2];
+			$kd_biodata = $row_kelas[9];				
+			$student_name = $row_kelas[10];				
+				
+			}
+		}
+$query_cek_lc = q_set($__p_query_cek_lc, "select tgl_meeting,coverage,score_lc,date_format(mulai_tm,'%H:%i'), date_format(selesai_tm,'%H:%i') from ves_data.vip_lc where kd_id = ? ", [(string) ($no)]);
+
+$resource_cek_lc= db_query_or_die('errro_visitor1', $query_cek_lc, $__p_query_cek_lc ?? []);
+	if(num(db_num_rows($resource_cek_lc)) > 0)
+		{
+		while ($row_lc =   db_fetch($resource_cek_lc, PDO::FETCH_NUM))
+			{
+			$tanggalpilih = $row_lc[0];
+			$coverage = $row_lc[1];
+			$score = $row_lc[2];
+			$mulai = $row_lc[3];
+			$selesai = $row_lc[4];				
+			}
+			
+		}
+
+$nama_lengkap = $_SESSION['nama_lengkap'];               
+		if($center =='East Sby'){$kd_center = '1';}
+if($center =='West Sby'){$kd_center = '2';}
+if($center =='Bali'){$kd_center = '3';}
+if($center =='South Jkt'){$kd_center = '4';}
+if($center =='North Jkt'){$kd_center = '5';}
+if($center =='West Jkt'){$kd_center = '6';}
+if($center =='Bandung'){$kd_center = '7';}
+if($center =='Malang'){$kd_center = '8';}	
+
+$mulai_kelas_baru = in_val('mulai_kelas_baru', 'any');
+if($mulai_kelas_baru ==''){ $mulai_kelas_baru = $tgl_lama;}
+$nm_teacher_baru = in_val('nm_teacher_baru', 'any');
+if($nm_teacher_baru == ''){$nm_teacher_baru =  $teacher_lama;}
+$room_baru = in_val('room_baru', 'any');
+if($room_baru == ''){$room_baru = $room_lama;}
+$start_schedule = in_val('start_schedule', 'any');
+if ($start_schedule == ''){$start_schedule = $start_schedule_lama;}
+$end_schedule = in_val('end_schedule', 'any');
+if ($end_schedule == ''){$end_schedule = $end_schedule_lama;}
+
+$remark_schedule = in_val('remark_schedule', 'any');
+//$query_nm_teacher = "SELECT b.nm_teacher FROM ves_data.vip_teacher_schedule a left join ves_data.vip_teacher_name b on a.nm_teacher = b.kd_teacher  where kelas = '$kode_kelas' group by a.nm_teacher";
+
+?>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>AdminLTE 2 | General Form Elements</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <!-- Bootstrap 3.3.6 -->
+  <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="css/font-awesome/css/font-awesome.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="css/ionicons/css/ionicons.min.css">
+  <!-- DataTables -->
+  <link rel="stylesheet" href="plugins/datatables/dataTables.bootstrap.css">
+  <link rel="stylesheet" href="plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="dist/css/AdminLTE.min.css">
+  <!-- AdminLTE Skins. Choose a skin from the css/skins
+       folder instead of downloading all of them to reduce the load. -->
+  <link rel="stylesheet" href="dist/css/skins/_all-skins.min.css">
+	    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"></link>
+    <script src="http://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/js/bootstrap-datepicker.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/css/bootstrap-datepicker.css"></link>
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+  <script src="js/tinymce.min.js"/></script>
+<script type="text/javascript">
+tinymce.init({
+    selector: "textarea",
+    plugins: [
+        "advlist autolink lists link image charmap print preview anchor",
+        "searchreplace visualblocks code fullscreen",
+        "insertdatetime media table contextmenu paste"
+    ],
+    toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image"
+});
+</script>
+</head>
+
+<div class="wrapper">
+
+  <!-- Left side column. contains the logo and sidebar -->
+  
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <h1>Learning Center Records Form</h1>
+    </section>
+ <form method="post"><?php echo csrf_field(); ?> 
+    <!-- Main content -->
+<section class="content">
+  <div class="row">
+<form role="form" method="post"><?php echo csrf_field(); ?>
+
+    <div class="col-md-12">
+		  	<div class="box box-warning">
+		  		<div class="box-header with-border"></div>
+           	  <div class="box-body">
+           	    <div class="col-md-5">
+           	      <div class="form-group">
+           	        <label>Class Code : <?php echo e($kdcl) ?></label>
+       	          </div>
+       	                     	      <div class="form-group">
+           	        <label>Date Meeting
+       	            : <?php echo e($tgl_meeting_lama) ?></label>
+       	          </div>
+       	                     	      <div class="form-group">
+           	        <label>Time : <?php echo e($start_schedule_lama) ?> to <?php echo e($end_schedule_lama) ?></label>
+           	      </div>
+       	        </div>
+           	    <div class="col-md-5">
+           	      <div class="form-group">
+           	        <label>Room : </label>
+   	              <?php echo e($room_lama) ?></div>
+           	      <div class="form-group">
+           	        <label>Teacher
+           	          : </label>
+   	              <?php echo e($teacher_lama) ?></div>
+           	      <div class="form-group">
+           	        <label>Student Name
+           	          : </label>
+   	              <?php echo e($student_name) ?></div>   	              
+           	      <div class="form-group"></div>
+       	        </div>
+           	    <span class="form-group">
+       	        <input type="text" name="no"value="<?php echo e($no) ?>" hidden>
+       	        </span><span class="form-group">
+       	        <input type="text" name="no"value="<?php echo e($no) ?>" hidden="">
+       	        </span><span class="form-group">
+       	        <input type="text" name="kdcl"value="<?php echo e($kdcl) ?>"hidden>
+       	        </span><span class="form-group">
+       	        <input type="text" name="kdcbg"value="<?php echo e($kdcbg) ?>"hidden>
+       	        <input type="text" name="urutan"value="<?php echo e($urutan_lama) ?>" hidden="">
+       	        </span><span class="form-group">
+       	        <input type="text" name="tgl_lama"value="<?php echo e($tgl_meeting_lama) ?>" hidden="">
+       	        </span><span class="form-group">
+       	        <input type="text" name="tgl_lengkap_lama"value="<?php echo e($tgl_lengkap_lama) ?>" hidden="">
+       	        </span><span class="form-group">
+       	        <input type="text" name="teacher"value="<?php echo e($teacher_lama) ?>" hidden="">
+       	        <input type="text" name="kd_biodata"value="<?php echo e($kd_biodata) ?>" hidden="" >
+       	        </span></div> 
+			</div>
+<div class="box box-warning">
+  <div class="box-header with-border"><strong>Material</strong></div>
+  <div class="box-body">
+    <div class="col-md-3">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="DATE" class="form-control"   placeholder="Enter ..." name="tanggalpilih" value="<?php echo e($tgl_meeting_lama) ?>" readonly>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="form-group">
+        <label>Time Start</label>
+        <select class="form-control" name="mulai" required>
+          <option>08:00</option>
+          <option>08:15</option>
+          <option>08:30</option>
+          <option>08:45</option>
+          <option>09:00</option>
+          <option>09:15</option>
+          <option>09:30</option>
+          <option>09:45</option>
+          <option>10:00</option>
+          <option>10:15</option>
+          <option>10:30</option>
+          <option>10:45</option>
+          <option>11:00</option>
+          <option>11:15</option>
+          <option>11:30</option>
+          <option>11:45</option>
+          <option>12:00</option>
+          <option>12:15</option>
+          <option>12:30</option>
+          <option>12:45</option>
+          <option>13:00</option>
+          <option>13:15</option>
+          <option>13:30</option>
+          <option>13:45</option>
+          <option>14:00</option>
+          <option>14:15</option>
+          <option>14:30</option>
+          <option>14:45</option>
+          <option>15:00</option>
+          <option>15:15</option>
+          <option>15:30</option>
+          <option>15:45</option>
+          <option>16:00</option>
+          <option>16:15</option>
+          <option>16:30</option>
+          <option>16:45</option>
+          <option>17:00</option>
+          <option>17:15</option>
+          <option>17:30</option>
+          <option>17:45</option>
+          <option>18:00</option>
+          <option>18:15</option>
+          <option>18:30</option>
+          <option>18:45</option>
+          <option>19:00</option>
+          <option>19:15</option>
+          <option>19:30</option>
+          <option>19:45</option>
+          <option>20:00</option>
+          <option>20:15</option>
+          <option>20:30</option>
+          <option>20:45</option>
+          <option>21:00</option>
+          <option selected><?php echo  e($start_schedule_lama) ?></option>
+        </select>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="form-group">
+        <label>Time End</label>
+        <select class="form-control" name="selesai" required>
+          <option>08:00</option>
+          <option>08:15</option>
+          <option>08:30</option>
+          <option>08:45</option>
+          <option>09:00</option>
+          <option>09:15</option>
+          <option>09:30</option>
+          <option>09:45</option>
+          <option>10:00</option>
+          <option>10:15</option>
+          <option>10:30</option>
+          <option>10:45</option>
+          <option>11:00</option>
+          <option>11:15</option>
+          <option>11:30</option>
+          <option>11:45</option>
+          <option>12:00</option>
+          <option>12:15</option>
+          <option>12:30</option>
+          <option>12:45</option>
+          <option>13:00</option>
+          <option>13:15</option>
+          <option>13:30</option>
+          <option>13:45</option>
+          <option>14:00</option>
+          <option>14:15</option>
+          <option>14:30</option>
+          <option>14:45</option>
+          <option>15:00</option>
+          <option>15:15</option>
+          <option>15:30</option>
+          <option>15:45</option>
+          <option>16:00</option>
+          <option>16:15</option>
+          <option>16:30</option>
+          <option>16:45</option>
+          <option>17:00</option>
+          <option>17:15</option>
+          <option>17:30</option>
+          <option>17:45</option>
+          <option>18:00</option>
+          <option>18:15</option>
+          <option>18:30</option>
+          <option>18:45</option>
+          <option>19:00</option>
+          <option>19:15</option>
+          <option>19:30</option>
+          <option>19:45</option>
+          <option>20:00</option>
+          <option>20:15</option>
+          <option>20:30</option>
+          <option>20:45</option>
+          <option>21:00</option>
+          <option selected><?php echo  e($end_schedule_lama) ?></option>
+        </select>
+      </div>
+    </div>
+    <div class="col-md-8">
+      <div class="form-group">
+        <label>Material</label>
+        <textarea class="textarea" placeholder="Place some text here" style="width: 100%; height: 200px; font-size: 14px; line-height: 18px; border: 1px solid #dddddd; padding: 10px;" name="coverage"><?php echo e($coverage) ?></textarea>
+      </div>
+    </div>
+    <div class="col-md-8">
+      <div class="form-group">
+        <label>Score</label>
+        <input type="text" class="form-control"  placeholder="Score" name="score" value="<?php echo e($score) ?>">
+      </div>
+    </div>
+  </div>
+</div>
+<div class="box-body"></div>
+
+<input type="submit" name="Submit" value="Submit" />
+</form>
+<script src="plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js"></script>
+<script src="https://cdn.ckeditor.com/4.5.7/standard/ckeditor.js"></script>
+<script>
+	$('.textarea').wysihtml5();
+</script>
+
+<script type="text/javascript" charset="utf-8">
+	$(prettyPrint);
+</script>
+</body>
+</html>
+<?php
+if (($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['Submit']))) 
+{
+$fullurl="http://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+$hari=date("d");
+$bulan=date("m");
+$tahun=date("Y");
+$hari_ini = "$tahun-$bulan-$hari";	
+$kdcl = in_val('kdcl', 'any');
+$tanggalpilih = in_val('tanggalpilih', 'any');
+$mulai = in_val('mulai', 'any');
+$selesai = in_val('selesai', 'any');
+	
+$kdcbg = in_val('kdcbg', 'any');
+$teacher = in_val('teacher', 'any');
+$coverage = in_val('coverage', 'any');
+$assignment = in_val('assignment', 'any');
+$score	 = in_val('score', 'any');
+$no = in_val('no', 'any');	
+
+//==cek
+$query_cek_lc = q_set($__p_query_cek_lc, "select kd_id from ves_data.vip_lc where kd_id = ? ", [(string) ($no)]);	
+$resource_cek_lc= db_query_or_die('errro_visitor1', $query_cek_lc, $__p_query_cek_lc ?? []);
+	if(num(db_num_rows($resource_cek_lc)) > 0)
+		{
+$query_simpan = q_set($__p_query_simpan, "update ves_data.vip_lc set coverage = ? ,score_lc = ? ,mulai_tm = ? ,selesai_tm = ? where kd_id = ? ", [(string) ($coverage), (string) ($score), (string) ($tanggalpilih) . " " . (string) ($mulai) . ":01", (string) ($tanggalpilih) . " " . (string) ($selesai) . ":00", (string) ($no)]);
+$resource_simpan = db_query_or_die('errro_simpan12', $query_simpan, $__p_query_simpan ?? []);
+$query_simpan = q_set($__p_query_simpan, "update vip_teacher_schedule set status_kelas = '75',mulai_tm = ? ,selesai_tm = ? where id = ? ", [(string) ($tanggalpilih) . " " . (string) ($mulai) . ":01", (string) ($tanggalpilih) . " " . (string) ($selesai) . ":00", (string) ($no)]);
+$resource_simpan = db_query_or_die('errro_simpan22', $query_simpan, $__p_query_simpan ?? []);			
+		}
+	else
+		{
+$query_simpan = q_set($__p_query_simpan, "insert into ves_data.vip_lc (kd_class,kd_branch,tgl_meeting,coverage,score_lc,mulai_tm, selesai_tm,dt_entry,pic, teacher,kd_id,kd_biodata) values (? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,? )", [(string) ($kdcl), (string) ($kdcbg), (string) ($tanggalpilih), (string) ($coverage), (string) ($score), (string) ($tanggalpilih) . " " . (string) ($mulai) . ":01", (string) ($tanggalpilih) . " " . (string) ($selesai) . ":00", (string) ($hari_ini), (string) ($nama_lengkap), (string) ($teacher), (string) ($no), (string) ($kd_biodata)]);
+$resource_simpan = db_query_or_die('errro_simpan32', $query_simpan, $__p_query_simpan ?? []);
+$query_simpan = q_set($__p_query_simpan, "update vip_teacher_schedule set status_kelas = '75',mulai_tm = ? ,selesai_tm = ? where id = ? ", [(string) ($tanggalpilih) . " " . (string) ($mulai) . ":01", (string) ($tanggalpilih) . " " . (string) ($selesai) . ":00", (string) ($no)]);
+$resource_simpan = db_query_or_die('errro_simpan42', $query_simpan, $__p_query_simpan ?? []);			
+		}
+//==	
+	
+	
+echo "<script type=\"text/javascript\">\n";
+echo "alert('Tutorial sudah di input oleh " . e($nama_lengkap) . "');\n";
+echo "window.opener.location.reload(true);\n";								
+echo "window.close();\n";				
+echo "</script>";
+}
+?>

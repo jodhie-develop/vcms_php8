@@ -1,0 +1,13 @@
+# Local secrets and environment
+.env
+.env.*
+!.env.example
+/vcms_private/
+
+# Database dumps and generated dependencies
+/fileSql/
+/vendor/
+
+# Runtime data
+**/logs/
+/docker-start-result.txt

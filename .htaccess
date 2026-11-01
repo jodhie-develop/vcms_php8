@@ -1,0 +1,40 @@
+# V-CMS (PHP 8.4) - .htaccess root
+# Membutuhkan Apache 2.4 dengan AllowOverride All (atau minimal: Options FileInfo Indexes Limit AuthConfig).
+
+Options -Indexes -MultiViews
+DirectoryIndex index.php
+
+# --- Header keamanan (bootstrap PHP juga mengirimnya; ini untuk file statis) ---
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "same-origin"
+    Header always unset X-Powered-By
+    # Aktifkan setelah HTTPS berjalan normal:
+    # Header always set Strict-Transport-Security "max-age=31536000"
+</IfModule>
+
+# --- File yang tidak boleh diunduh dari web ---
+<FilesMatch "(?i)\.(sql|bak|old|orig|swp|log|ini|inc|sh|env|md|lock|dist|phar|phtml|phps|phpx|php\d|php_|php~)$">
+    Require all denied
+</FilesMatch>
+<FilesMatch "(?i)^(composer\.(json|lock)|\.git.*|\.env.*|\.htpasswd|SKIPPED\.md|DEPLOY\.md|proses_migrasi\.md)$">
+    Require all denied
+</FilesMatch>
+
+# --- Folder internal / pustaka: hanya di-include oleh PHP, tidak diakses langsung ---
+# (_lib punya .htaccess sendiri; mod_alias dipakai agar satu file ini cukup)
+<IfModule mod_alias.c>
+    RedirectMatch 404 "(?i)^/(.*/)?(_lib|catatan|backup|vcms|trial|ptest|newdata|quizz|rw10|New folder.*|_tmp_\w+)(/|$)"
+    # pustaka Composer (spipu/html2pdf, TCPDF): hanya di-include, tidak boleh diakses dari web
+    RedirectMatch 404 "(?i)^/vendor(/|$)"
+    RedirectMatch 404 "(?i)^/(.*/)?(html2pdf|PHPExcel|PHPMailer5|PHPMailer-master|phpmailer|src|jSignature-master/extras|plugins/ckeditor/samples|plugins/datatables/extensions/.*/examples)/.*\.php$"
+    RedirectMatch 404 "(?i)^/(.*/)?ecert/dompdf/.*\.php$"
+    RedirectMatch 404 "(?i)^/(.*/)?\.(git|svn|hg)(/|$)"
+</IfModule>
+
+# --- Folder upload: tidak boleh menjalankan script (cadangan; upload_prepare_dir() juga
+#     menulis .htaccess di tiap folder upload saat upload pertama) ---
+<IfModule mod_alias.c>
+    RedirectMatch 404 "(?i)^/(.*/)?(brg_img|ctrct|doc_vos|e_sign|fncfile|gb|gbmaterial|gbpdo|gbstaff|gudangfile|imgs/meeting|po_docs|rulesmemofile|uploads|vipfile|vipscsq)/.*\.(php\d?|phtml|pht|phar|cgi|pl|py|sh|asp|aspx|jsp)$"
+</IfModule>
